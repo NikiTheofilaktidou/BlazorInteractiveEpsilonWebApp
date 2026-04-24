@@ -8,12 +8,12 @@
 
 	Required: 
 	- A grid with all customers with paging
-	- CRUD Operations on “Customer” model with new, edit and delete functionalities
+	- CRUD Operations on “Customer” model
 	- Expose all CRUD Operations as an API 
 	- Configure application to use Sql Server
 	- Manage migrations
 	- Add Cookie authentication for the client  
-	- Protect your API with JWT authentication
+	- Implement update operations in API controller with JWT authentication
 	
 	Nice to have :
 	- Blazor UI framework
