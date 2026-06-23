@@ -35,5 +35,5 @@
 ## Requirements 
 
 - C#
-- .NET 9+ 
+- .NET 10 
 - Blazor Interactive (wasm or server render mode)
