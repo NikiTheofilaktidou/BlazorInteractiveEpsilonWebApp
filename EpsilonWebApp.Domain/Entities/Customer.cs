@@ -1,4 +1,4 @@
-﻿namespace EpsilonWebApp.Models
+﻿namespace EpsilonWebApp.Domain.Entities
 {
     public class Customer
     {
