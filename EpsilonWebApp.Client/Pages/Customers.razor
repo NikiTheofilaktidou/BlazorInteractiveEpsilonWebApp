@@ -1,4 +1,4 @@
-﻿@page "/customers"
+﻿@* @page "/customers"
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 @using EpsilonWebApp.Application.DTOs
 @using EpsilonWebApp.Client.Services
@@ -100,5 +100,84 @@ else
             currentPage++;
             UpdatePagedCustomers();
         }
+    }
+} *@
+
+@page "/customers"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+
+@using EpsilonWebApp.Application.DTOs
+@using EpsilonWebApp.Client.Services
+@inject CustomerApiService CustomerApiService
+
+<MudProviders />
+<MudContainer MaxWidth="MaxWidth.False" Class="mt-6 px-6">
+    <MudPaper Class="pa-6 rounded-lg" Elevation="3">
+
+        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+            <MudText Typo="Typo.h4">Customers</MudText>
+
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Add">
+                Add Customer
+            </MudButton>
+        </MudStack>
+
+        @if (customers is null)
+        {
+            <MudProgressCircular Indeterminate="true" />
+        }
+        else
+        {
+            <MudTable Items="customers"
+                      Hover="true"
+                      Striped="true"
+                      Bordered="true"
+                      Dense="true"
+                      Elevation="0"
+                      RowsPerPage="10">
+
+                <HeaderContent>
+                    <MudTh>Company</MudTh>
+                    <MudTh>Contact</MudTh>
+                    <MudTh>City</MudTh>
+                    <MudTh>Country</MudTh>
+                    <MudTh>Phone</MudTh>
+                    <MudTh>Actions</MudTh>
+                </HeaderContent>
+
+                <RowTemplate>
+                    <MudTd DataLabel="Company">@context.CompanyName</MudTd>
+                    <MudTd DataLabel="Contact">@context.ContactName</MudTd>
+                    <MudTd DataLabel="City">@context.City</MudTd>
+                    <MudTd DataLabel="Country">@context.Country</MudTd>
+                    <MudTd DataLabel="Phone">@context.Phone</MudTd>
+                    <MudTd DataLabel="Actions">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Color="Color.Primary"
+                                       Size="Size.Small" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Color="Color.Error"
+                                       Size="Size.Small" />
+                    </MudTd>
+                </RowTemplate>
+
+                <PagerContent>
+                    <MudTablePager />
+                </PagerContent>
+
+            </MudTable>
+        }
+
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private List<CustomerDto>? customers;
+
+    protected override async Task OnInitializedAsync()
+    {
+        customers = await CustomerApiService.GetCustomersAsync();
     }
 }
