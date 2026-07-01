@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace EpsilonWebApp.Domain.Entities;
 
-namespace EpsilonWebApp.Domain.Entities
+public class Manager
 {
-    public class Manager
-    {
-    }
+    public string? Name { get; set; }
 }

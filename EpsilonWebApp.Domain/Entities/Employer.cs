@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace EpsilonWebApp.Domain.Entities;
 
-namespace EpsilonWebApp.Domain.Entities
+public class Employee
 {
-    public class Employer
-    {
-    }
+    public string? Name { get; set; }
 }

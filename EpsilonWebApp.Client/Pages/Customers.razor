@@ -1,5 +1,104 @@
-﻿<h3>Customers</h3>
+﻿@page "/customers"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@using EpsilonWebApp.Application.DTOs
+@using EpsilonWebApp.Client.Services
+@inject CustomerApiService CustomerApiService
+
+<h3>Customers</h3>
+
+@if (customers is null)
+{
+    <p>Searching Customers...</p>
+}
+else if (!pagedCustomers.Any())
+{
+    <p>No customers found!</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Company</th>
+                <th>Contact</th>
+                <th>Address</th>
+                <th>City</th>
+                <th>Region</th>
+                <th>Postal Code</th>
+                <th>Country</th>
+                <th>Phone</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var customer in pagedCustomers)
+            {
+                <tr>
+                    <td>@customer.CompanyName</td>
+                    <td>@customer.ContactName</td>
+                    <td>@customer.Address</td>
+                    <td>@customer.City</td>
+                    <td>@customer.Region</td>
+                    <td>@customer.PostalCode</td>
+                    <td>@customer.Country</td>
+                    <td>@customer.Phone</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <button class="btn btn-secondary" @onclick="PreviousPage" disabled="@(currentPage == 1)">
+        Prev
+    </button>
+
+    <span class="mx-2">Page @currentPage of @totalPages</span>
+
+    <button class="btn btn-secondary" @onclick="NextPage" disabled="@(currentPage == totalPages)">
+        Next
+    </button>
+}
 
 @code {
+    private List<CustomerDto>? customers;
+    private IEnumerable<CustomerDto> pagedCustomers = [];
+    private int currentPage = 1;
+    private int pageSize = 5;
+    private int totalPages = 1;
 
+    protected override async Task OnInitializedAsync()
+    {
+        customers = await CustomerApiService.GetCustomersAsync();
+        UpdatePagedCustomers();
+    }
+
+    private void UpdatePagedCustomers()
+    {
+        if (customers is null)
+            return;
+
+        totalPages = customers.Count / pageSize;
+        if (customers.Count % pageSize != 0)
+        {
+            totalPages++;
+        }
+
+        pagedCustomers = customers.Skip((currentPage - 1) * pageSize).Take(pageSize);
+    }
+
+    private void PreviousPage()
+    {
+        if (currentPage > 1)
+        {
+            currentPage--;
+            UpdatePagedCustomers();
+        }
+    }
+
+    private void NextPage()
+    {
+        if (currentPage < totalPages)
+        {
+            currentPage++;
+            UpdatePagedCustomers();
+        }
+    }
 }

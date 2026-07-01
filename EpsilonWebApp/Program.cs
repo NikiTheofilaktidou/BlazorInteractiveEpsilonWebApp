@@ -1,5 +1,9 @@
-using EpsilonWebApp.Client.Pages;
 using EpsilonWebApp.Components;
+using EpsilonWebApp.Infrastructure.DBContext;
+using Microsoft.EntityFrameworkCore;
+using EpsilonWebApp.Application.Interfaces;
+using EpsilonWebApp.Application.Services;
+using EpsilonWebApp.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,7 +11,17 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
-
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DBConnection")));
+builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
+builder.Services.AddScoped<ICustomerService, CustomerService>();
+builder.Services.AddControllers();
+builder.Services.AddScoped(sp =>
+    new HttpClient
+    {
+        BaseAddress = new Uri(builder.Configuration["BaseAddress"] ?? "https://localhost:7234/")
+    });
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -32,5 +46,5 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(EpsilonWebApp.Client._Imports).Assembly);
-
+app.MapControllers();
 app.Run();
