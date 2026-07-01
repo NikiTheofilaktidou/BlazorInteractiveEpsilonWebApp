@@ -1,5 +1,106 @@
-﻿<h3>EditCustomer</h3>
+﻿@page "/customers/edit/{Id:guid}"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+
+@using EpsilonWebApp.Application.DTOs
+@inject EpsilonWebApp.Client.Services.CustomerApiService CustomerApiService
+@inject NavigationManager NavigationManager
+
+<MudProviders />
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-6">
+    <MudPaper Class="pa-6 rounded-lg" Elevation="3">
+
+        <MudText Typo="Typo.h4" Class="mb-2">Edit Customer</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-6">Edit customer details</MudText>
+
+        @if (customer is null)
+        {
+            <MudProgressCircular Indeterminate="true" />
+        }
+        else
+        {
+            <MudForm @ref="form">
+                <MudTextField @bind-Value="customer.CompanyName" Label="Company Name" Required="true" />
+                <MudTextField @bind-Value="customer.ContactName" Label="Contact Name" Required="true" />
+                <MudTextField @bind-Value="customer.Address" Label="Address" Required="true" />
+
+                <MudGrid Class="mt-2">
+                    <MudItem xs="12" md="6">
+                        <MudTextField @bind-Value="customer.City" Label="City" />
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudTextField @bind-Value="customer.Region" Label="Region" />
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudTextField @bind-Value="customer.PostalCode" Label="Postal Code" Required="true" />
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudTextField @bind-Value="customer.Country" Label="Country" />
+                    </MudItem>
+                </MudGrid>
+
+                <MudTextField @bind-Value="customer.Phone" Label="Phone" Required="true" Class="mt-2" />
+
+                <MudStack Row="true" Justify="Justify.FlexEnd" Spacing="2" Class="mt-6">
+                    <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="Cancel"> Cancel </MudButton>
+                    <MudButton Variant="Variant.Filled" Color="Color.Warning" OnClick="Save"> Update </MudButton>
+                </MudStack>
+            </MudForm>
+        }
+
+    </MudPaper>
+</MudContainer>
 
 @code {
+    [Parameter]
+    public Guid Id { get; set; }
 
+    private MudForm? form;
+    private UpdateCustomerDto? customer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var existingCustomer = await CustomerApiService.GetCustomerByIdAsync(Id);
+
+        if (existingCustomer is null)
+        {
+            NavigationManager.NavigateTo("/customers");
+            return;
+        }
+
+        customer = new UpdateCustomerDto
+        {
+            CompanyName = existingCustomer.CompanyName,
+            ContactName = existingCustomer.ContactName,
+            Address = existingCustomer.Address,
+            City = existingCustomer.City,
+            Region = existingCustomer.Region,
+            PostalCode = existingCustomer.PostalCode,
+            Country = existingCustomer.Country,
+            Phone = existingCustomer.Phone
+        };
+    }
+
+    private async Task Save()
+    {
+        if (form is null || customer is null)
+            return;
+
+        await form.ValidateAsync();
+
+        if (!form.IsValid)
+            return;
+
+        await CustomerApiService.UpdateCustomerAsync(Id, customer);
+
+        NavigationManager.NavigateTo("/customers");
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/customers");
+    }
 }

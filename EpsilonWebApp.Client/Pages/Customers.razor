@@ -1,128 +1,27 @@
-﻿@* @page "/customers"
-@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
-@using EpsilonWebApp.Application.DTOs
-@using EpsilonWebApp.Client.Services
-@inject CustomerApiService CustomerApiService
-
-<h3>Customers</h3>
-
-@if (customers is null)
-{
-    <p>Searching Customers...</p>
-}
-else if (!pagedCustomers.Any())
-{
-    <p>No customers found!</p>
-}
-else
-{
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Company</th>
-                <th>Contact</th>
-                <th>Address</th>
-                <th>City</th>
-                <th>Region</th>
-                <th>Postal Code</th>
-                <th>Country</th>
-                <th>Phone</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var customer in pagedCustomers)
-            {
-                <tr>
-                    <td>@customer.CompanyName</td>
-                    <td>@customer.ContactName</td>
-                    <td>@customer.Address</td>
-                    <td>@customer.City</td>
-                    <td>@customer.Region</td>
-                    <td>@customer.PostalCode</td>
-                    <td>@customer.Country</td>
-                    <td>@customer.Phone</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-
-    <button class="btn btn-secondary" @onclick="PreviousPage" disabled="@(currentPage == 1)">
-        Prev
-    </button>
-
-    <span class="mx-2">Page @currentPage of @totalPages</span>
-
-    <button class="btn btn-secondary" @onclick="NextPage" disabled="@(currentPage == totalPages)">
-        Next
-    </button>
-}
-
-@code {
-    private List<CustomerDto>? customers;
-    private IEnumerable<CustomerDto> pagedCustomers = [];
-    private int currentPage = 1;
-    private int pageSize = 5;
-    private int totalPages = 1;
-
-    protected override async Task OnInitializedAsync()
-    {
-        customers = await CustomerApiService.GetCustomersAsync();
-        UpdatePagedCustomers();
-    }
-
-    private void UpdatePagedCustomers()
-    {
-        if (customers is null)
-            return;
-
-        totalPages = customers.Count / pageSize;
-        if (customers.Count % pageSize != 0)
-        {
-            totalPages++;
-        }
-
-        pagedCustomers = customers.Skip((currentPage - 1) * pageSize).Take(pageSize);
-    }
-
-    private void PreviousPage()
-    {
-        if (currentPage > 1)
-        {
-            currentPage--;
-            UpdatePagedCustomers();
-        }
-    }
-
-    private void NextPage()
-    {
-        if (currentPage < totalPages)
-        {
-            currentPage++;
-            UpdatePagedCustomers();
-        }
-    }
-} *@
-
-@page "/customers"
+﻿@page "/customers"
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 
 @using EpsilonWebApp.Application.DTOs
 @using EpsilonWebApp.Client.Services
+@using Microsoft.AspNetCore.Components
 @inject CustomerApiService CustomerApiService
+@inject NavigationManager NavigationManager
+@inject IDialogService DialogService
 
 <MudProviders />
+
 <MudContainer MaxWidth="MaxWidth.False" Class="mt-6 px-6">
     <MudPaper Class="pa-6 rounded-lg" Elevation="3">
 
         <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
             <MudText Typo="Typo.h4">Customers</MudText>
 
-            <MudButton Variant="Variant.Filled"
-                       Color="Color.Primary"
-                       StartIcon="@Icons.Material.Filled.Add">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="GoToCreateForm">
                 Add Customer
             </MudButton>
         </MudStack>
+
+        <MudTextField @bind-Value="searchCustomer" Placeholder="Search Customer" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Immediate="true" Class="mb-4" />
 
         @if (customers is null)
         {
@@ -130,14 +29,7 @@ else
         }
         else
         {
-            <MudTable Items="customers"
-                      Hover="true"
-                      Striped="true"
-                      Bordered="true"
-                      Dense="true"
-                      Elevation="0"
-                      RowsPerPage="10">
-
+            <MudTable Items="filteredCustomers" Hover="true" Striped="true" Bordered="true" Dense="true" Elevation="0" RowsPerPage="10">
                 <HeaderContent>
                     <MudTh>Company</MudTh>
                     <MudTh>Contact</MudTh>
@@ -154,19 +46,14 @@ else
                     <MudTd DataLabel="Country">@context.Country</MudTd>
                     <MudTd DataLabel="Phone">@context.Phone</MudTd>
                     <MudTd DataLabel="Actions">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Color="Color.Primary"
-                                       Size="Size.Small" />
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Color="Color.Error"
-                                       Size="Size.Small" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small" OnClick="@(() => GoToEdit(context.Id))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteCustomer(context.Id))" />
                     </MudTd>
                 </RowTemplate>
 
                 <PagerContent>
                     <MudTablePager />
                 </PagerContent>
-
             </MudTable>
         }
 
@@ -175,9 +62,42 @@ else
 
 @code {
     private List<CustomerDto>? customers;
+    private string searchCustomer = string.Empty;
+
+    private IEnumerable<CustomerDto> filteredCustomers => string.IsNullOrWhiteSpace(searchCustomer) ? customers ?? [] : 
+    (customers ?? []).Where(c => Contains(c.CompanyName) || Contains(c.ContactName) || Contains(c.City) || Contains(c.Country) || Contains(c.Phone));
+
+    private bool Contains(string? value)
+    {
+        return !string.IsNullOrWhiteSpace(value) && value.Contains(searchCustomer, StringComparison.OrdinalIgnoreCase);
+    }
 
     protected override async Task OnInitializedAsync()
     {
+        customers = await CustomerApiService.GetCustomersAsync();
+    }
+
+    private void GoToCreateForm()
+    {
+        NavigationManager.NavigateTo("/customers/create");
+    }
+
+    private void GoToEdit(Guid id)
+    {
+        NavigationManager.NavigateTo($"/customers/edit/{id}");
+    }
+
+    private async Task DeleteCustomer(Guid id)
+    {
+        bool? confirmed = await DialogService.ShowMessageBoxAsync(title: "Delete Customer",
+        message: "Are you sure you want to delete this customer?",
+        yesText: "Delete",
+        cancelText: "Cancel");
+
+        if (confirmed != true)
+            return;
+
+        await CustomerApiService.DeleteCustomerAsync(id);
         customers = await CustomerApiService.GetCustomersAsync();
     }
 }
