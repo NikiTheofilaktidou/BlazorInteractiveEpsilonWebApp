@@ -12,5 +12,7 @@ builder.Services.AddScoped(sp =>
 
 builder.Services.AddScoped<CustomerApiService>();
 builder.Services.AddMudServices();
+builder.Services.AddScoped<TokenService>();
+builder.Services.AddScoped<AuthService>();
 
 await builder.Build().RunAsync();

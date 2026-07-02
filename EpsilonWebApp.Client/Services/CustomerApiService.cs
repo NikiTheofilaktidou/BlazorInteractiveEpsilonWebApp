@@ -6,10 +6,12 @@ namespace EpsilonWebApp.Client.Services;
 public class CustomerApiService
 {
     private readonly HttpClient _httpClient;
+    private readonly TokenService _tokenService;
 
-    public CustomerApiService(HttpClient httpClient)
+    public CustomerApiService(HttpClient httpClient, TokenService tokenService)
     {
         _httpClient = httpClient;
+        _tokenService = tokenService;
     }
 
     public async Task<List<CustomerDto>> GetCustomersAsync()
@@ -31,7 +33,10 @@ public class CustomerApiService
 
     public async Task UpdateCustomerAsync(Guid id, UpdateCustomerDto customer)
     {
-        await _httpClient.PutAsJsonAsync($"api/customers/{id}", customer);
+        _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _tokenService.Token);
+        var response = await _httpClient.PutAsJsonAsync($"api/customers/{id}", customer);
+
+        response.EnsureSuccessStatusCode();
     }
 
     public async Task DeleteCustomerAsync(Guid id)

@@ -1,5 +1,46 @@
-﻿<h3>Login</h3>
+﻿@page "/login"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+
+@inject AuthService Auth
+@inject NavigationManager NavigationManager
+
+<MudProviders />
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="mt-12">
+    <MudPaper Class="pa-6 rounded-lg" Elevation="3">
+
+        <MudText Typo="Typo.h4" Class="mb-4">Login</MudText>
+
+        <MudTextField @bind-Value="userName" Label="Username" Required="true" Class="mb-3" />
+
+        <MudTextField @bind-Value="password" Label="Password" InputType="InputType.Password" Required="true" Class="mb-4" />
+
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" OnClick="HandleLogin"> Login </MudButton>
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <MudAlert Severity="Severity.Error" Class="mt-4"> @errorMessage </MudAlert>
+        }
+
+    </MudPaper>
+</MudContainer>
 
 @code {
+    private string userName = string.Empty;
+    private string password = string.Empty;
+    private string? errorMessage;
 
+    private async Task HandleLogin()
+    {
+        try
+        {
+            await Auth.LoginAsync(userName, password);
+
+            NavigationManager.NavigateTo("/customers");
+        }
+        catch
+        {
+            errorMessage = "Invalid credentials.";
+        }
+    }
 }

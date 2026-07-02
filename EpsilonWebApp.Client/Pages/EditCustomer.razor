@@ -3,6 +3,7 @@
 
 @using EpsilonWebApp.Application.DTOs
 @inject EpsilonWebApp.Client.Services.CustomerApiService CustomerApiService
+@inject EpsilonWebApp.Client.Services.TokenService TokenService
 @inject NavigationManager NavigationManager
 
 <MudProviders />
@@ -63,6 +64,12 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (string.IsNullOrWhiteSpace(TokenService.Token))
+        {
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+
         var existingCustomer = await CustomerApiService.GetCustomerByIdAsync(Id);
 
         if (existingCustomer is null)

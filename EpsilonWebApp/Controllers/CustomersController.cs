@@ -1,6 +1,8 @@
 ﻿using EpsilonWebApp.Application.DTOs;
 using EpsilonWebApp.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 
 namespace EpsilonWebApp.Controllers;
 
@@ -41,6 +43,7 @@ public class CustomersController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = createdCustomer.Id }, createdCustomer);
     }
 
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [HttpPut("{id}")]
     public async Task<ActionResult> Update(Guid id, UpdateCustomerDto customer)
     {
