@@ -113,6 +113,7 @@ public class CustomersControllerTests : IClassFixture<WebApplicationFactory<Prog
         };
 
         var response = await _client.PostAsJsonAsync("/api/customers", customer);
+
         response.EnsureSuccessStatusCode();
 
         var createdCustomer = await response.Content.ReadFromJsonAsync<CustomerDto>();
@@ -124,8 +125,8 @@ public class CustomersControllerTests : IClassFixture<WebApplicationFactory<Prog
     {
         var response = await _client.PostAsJsonAsync("/api/auth/login", new
         {
-            userName = "Niki",
-            password = "12345"
+            UserName = "Niki",
+            Password = "12345"
         });
 
         response.EnsureSuccessStatusCode();
