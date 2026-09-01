@@ -21,8 +21,9 @@
         else
         {
             <MudForm @ref="form">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
                 <MudTextField @bind-Value="customer.CompanyName" Label="Company Name" Required="true" />
-                <MudTextField @bind-Value="customer.ContactName" Label="Contact Name" Required="true" />
                 <MudTextField @bind-Value="customer.Address" Label="Address" Required="true" />
 
                 <MudGrid Class="mt-2">
