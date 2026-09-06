@@ -7,19 +7,18 @@ namespace EpsilonWebApp.Domain.Entities
         public Guid Id { get; set; }
 
         [Required]
-        public string? CompanyName { get; set; }
+        public string CompanyName { get; set; } = string.Empty;
 
         [Required]
-        public string? ContactName { get; set; }
+        public string ContactName { get; set; } = string.Empty;
 
         [Required]
-        public string? Address { get; set; }
+        public string Address { get; set; } = string.Empty;
 
         public string? City { get; set; }
 
         public string? Region { get; set; }
 
-        [Required]
         [MinLength(5)]
         public string? PostalCode { get; set; }
 
@@ -27,6 +26,6 @@ namespace EpsilonWebApp.Domain.Entities
 
         [Required]
         [MinLength(10)]
-        public string? Phone { get; set; }
+        public string Phone { get; set; } = string.Empty;
     }
 }
